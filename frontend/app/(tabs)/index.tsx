@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { fetchData, ResponseInterface, BASE_URL } from "../../utils/needful";
+
 const salons = [
   {
     id: '1',
@@ -47,8 +49,40 @@ const salons = [
 ];
 
 export default function Barber() {
-  const [activeFilter, setActiveFilter] = useState('nearby');
   const router = useRouter();
+  
+  const [activeFilter, setActiveFilter] = useState('nearby');
+  
+
+  const [response, setResponse] = useState<ResponseInterface | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log("123456782345678");
+    fetchList();
+  }, []);
+
+  const fetchList = async () => {
+    
+    try {
+      const data = await fetchData({
+        url: BASE_URL + "/apibarber/",
+        // url: "http://issw.mandakh.org/apihabit/",
+        method: "POST",
+        body: { action: "getallbarber" },
+      });
+      setResponse(data["data"]);
+      
+      
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   const handleFilterPress = (filter) => {
     setActiveFilter(filter);
@@ -57,20 +91,20 @@ export default function Barber() {
 
   const renderSalon = ({ item }) => (
     <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.logo} />
+      <Image source={{ uri: BASE_URL + item.image }} style={styles.logo} />
       <View style={{ flex: 1, paddingHorizontal: 10 }}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.description}</Text>
       <View style={styles.row}>
           <Entypo name="location-pin" size={14} color="#004080" />
-          <Text style={styles.infoText}>{item.distance}</Text>
+          <Text style={styles.infoText}>{item.location}</Text>
       </View>
       <View style={styles.row}>
           <Entypo name="eye" size={14} color="#004080" />
-          <Text style={styles.infoText}>{item.views.toLocaleString()}</Text>
+          <Text style={styles.infoText}>{item.location}</Text>
       </View>
       <View style={styles.row}>
           <Ionicons name="time-outline" size={14} color="#004080" />
-          <Text style={styles.infoText}>{item.hours}</Text>
+          <Text style={styles.infoText}>{item.time}</Text>
       </View>
       </View >
       <TouchableOpacity onPress={() => router.push(`/detail/${item.id}`)}>
@@ -131,7 +165,7 @@ export default function Barber() {
       </View>
       </ScrollView>
       <FlatList
-        data={salons}
+        data={response}
         keyExtractor={(item) => item.id}
         renderItem={renderSalon}
         contentContainerStyle={styles.listContent}
