@@ -27,21 +27,22 @@ def dt_class(request):
     resp = sendResponse(action, 200, "Success", respData)
     return resp
 
-def dt_getdata(request):
+def dt_getallbarber(request):
     jsons = json.loads(request.body)
     action = jsons['action']
-    try:
-        id = jsons['id']
-    except: 
-        action = action
-        respData = []
-        resp = sendResponse(action, 1001, "id key baihgui",respData)
-        return resp
+    # try:
+    #     id = jsons['id']
+    # except: 
+    #     action = action
+    #     respData = []
+    #     resp = sendResponse(action, 1001, "id key baihgui",respData)
+    #     return resp
     
     try:
         myConn = connectDB() # database connection
         cursor = myConn.cursor() # create cursor
-        query = f"SELECT * FROM t_habit WHERE id = {id}"
+        query = f"""SELECT barbershopid, description, image, descriptionimage, location, rate, "time"
+	                FROM t_barbershop;"""
         cursor.execute(query)
         columns = cursor.description
         # print(columns)
@@ -145,8 +146,8 @@ def checkService(request):
             elif(action == 'class'): #
                 result = dt_class(request)
                 return (JsonResponse(result))
-            elif(action == 'getdata'): #
-                result = dt_getdata(request)
+            elif(action == 'getallbarber'): #
+                result = dt_getallbarber(request)
                 return (JsonResponse(result))
             # elif(action == 'getuser'):
             #     result = dt_getuser(request)
