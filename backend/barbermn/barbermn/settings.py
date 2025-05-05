@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+import psycopg2
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +27,14 @@ SECRET_KEY = 'django-insecure-968+5q%lk-tw4$mqu33bw_ggx_3g2m2qtcgoqli&3!ffesp#(y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '59.153.86.254',
+    '127.0.0.1',
+    'localhost',
+    '192.168.0.15',
+    'issw.mandakh.org',
+    '*',
+]
 
 
 # Application definition
@@ -121,3 +130,19 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+def connectDB():
+    conn = psycopg2.connect(
+        host="192.168.0.15",
+        # host="59.153.86.254",
+        dbname="dbissw",
+        user="userISSW",
+        password="passissw",
+        # password="paasissw",
+        port=5938
+    )
+    return conn
+
+
+def disconnectDB(conn):
+    conn.close()
