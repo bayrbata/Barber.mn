@@ -36,7 +36,7 @@ export default function HomeScreen() {
         <MenuItem 
           icon={<MaterialIcons name="logout" size={24} color="#333" />} 
           text="Гарах" 
-          onPress={() => {}} 
+          onPress={() => navigation.navigate('index')} 
         />
       </View>
     </View>
