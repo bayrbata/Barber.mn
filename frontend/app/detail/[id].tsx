@@ -1,128 +1,180 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { Ionicons, Entypo } from '@expo/vector-icons';
+import {
+  View,
+  ImageBackground,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 
-const salons = [
-  {
-    id: '1',
-    name: 'berd barber shop',
-    distance: '8.8км',
-    views: 2019,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/300x200.png?text=berd',
-    description: 'Энэ бол berd barber shop дэлгэрэнгүй танилцуулга юм.',
-  },
-  {
-    id: '2',
-    name: 'Esa Vip Hair color salon',
-    distance: '8.8км',
-    views: 707,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/300x200.png?text=esa',
-    description: 'Esa салон нь үсний будалт дээр мэргэшсэн.',
-  },
-  {
-    id: '3',
-    name: 'L&A Barber Shop',
-    distance: '9.3км',
-    views: 4326,
-    hours: '10:00–21:00',
-    image: 'https://via.placeholder.com/300x200.png?text=L%26A',
-    description: 'L&A бол залуусын дунд алдартай шоп юм.',
-  },
-  {
-    id: '4',
-    name: 'Бодь мутар',
-    distance: '10.3км',
-    views: 648,
-    hours: '09:00–21:00',
-    image: 'https://via.placeholder.com/300x200.png?text=Бодь',
-    description: 'Бариа засал, уламжлалт аргаар үйлчилдэг газар.',
-  },
-  {
-    id: '5',
-    name: "Jonny's barbershop",
-    distance: '10.3км',
-    views: 0,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/300x200.png?text=Jonny',
-    description: 'Jonny\'s бол шинээр нээгдсэн гоо сайхны салон.',
-  },
-];
+const API_URL = 'http://127.0.0.1:8000/apibarber/';
+const base_URL = 'http://127.0.0.1:8000/';
 
-export default function DetailPage() {
+export default function BarberDetailScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const [barberData, setBarberData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const salon = salons.find((s) => s.id === id);
+  const fetchBarberById = async () => {
+    try {
+      setError('');
+      const res = await axios.post(API_URL, {
+        action: 'getbarberbyid',
+        barbershopid: id,
+      });
 
-  if (!salon) {
+      if (res.data && res.data.data) {
+        setBarberData(res.data.data);
+      } else {
+        setError('Мэдээлэл олдсонгүй.');
+      }
+    } catch (err) {
+      console.error('Алдаа:', err);
+      setError('Сервертэй холбогдож чадсангүй.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBarberById();
+  }, [id]);
+
+  if (loading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.error}>Салон олдсонгүй</Text>
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#004080" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={{ color: 'red' }}>{error}</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Image source={{ uri: salon.image }} style={styles.image} />
-      <Text style={styles.name}>{salon.name}</Text>
-      <View style={styles.row}>
-        <Entypo name="location-pin" size={18} color="#004080" />
-        <Text style={styles.infoText}>{salon.distance}</Text>
-      </View>
-      <View style={styles.row}>
-        <Entypo name="eye" size={18} color="#004080" />
-        <Text style={styles.infoText}>{salon.views.toLocaleString()} үзэлт</Text>
-      </View>
-      <View style={styles.row}>
-        <Ionicons name="time-outline" size={18} color="#004080" />
-        <Text style={styles.infoText}>{salon.hours}</Text>
-      </View>
-      <Text style={styles.description}>{salon.description}</Text>
-    </ScrollView>
+    <View style={styles.fullscreenContainer}>
+      <ImageBackground
+        source={{
+          uri: barberData?.image
+            ? base_URL + barberData.image
+            : 'https://via.placeholder.com/300x200',
+        }}
+        style={styles.fullscreenImage}
+        resizeMode="cover"
+      >
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={30} color="#fff" />
+        </TouchableOpacity>
+
+        {/* Title and Buttons */}
+        <View style={styles.overlay}>
+          <Text style={styles.title}>{barberData?.description}</Text>
+          <View style={styles.underline} />
+          <Text style={styles.subtitle}>Бидний тухай</Text>
+
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push(`/service/${barbershopid}`)}>
+              <Text style={styles.buttonText}>Үйлчилгээ</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button}>
+              <Text style={styles.buttonText}>Бидний тухай</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    backgroundColor: '#fff',
-    flexGrow: 1,
+  fullscreenContainer: {
+    flex: 1,
+    backgroundColor: '#000',
   },
-  image: {
+  fullscreenImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 16,
-    marginBottom: 20,
+    height: '100%',
+    justifyContent: 'space-between',
   },
-  name: {
-    fontSize: 22,
+backButton: {
+  position: 'absolute',
+  top: 20,
+  left: 20,
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  padding: 10,
+  borderRadius: 25,
+  zIndex: 10,
+  borderColor: '#fff',      // Цагаан хүрээ
+  borderWidth: 1,         // Хүрээний зузаан
+},
+overlay: {
+  flex: 1,
+  justifyContent: 'center', // босоогоор голд
+  alignItems: 'center',     // хөндлөнгөөр голд
+  paddingHorizontal: 20,
+},
+  title: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#004080',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    color: '#fff',
     marginBottom: 8,
   },
-  infoText: {
+  subtitle: {
     fontSize: 16,
-    marginLeft: 8,
-    color: '#333',
+    color: '#fff',
+    marginBottom: 20,
   },
-  description: {
-    fontSize: 16,
-    marginTop: 20,
-    lineHeight: 22,
-    color: '#555',
-  },
-  error: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginTop: 40,
-    color: 'red',
+  underline: {
+  width: '100%',
+  height: 1,
+  backgroundColor: '#fff',
+  marginTop: 6,
+  marginBottom: 10,
+},
+  
+ footer: {
+  position: 'absolute',
+  bottom: 60, // доош нь байрлуулах
+  left: 20,
+  right: 20,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+button: {
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  borderColor: '#fff',
+  borderWidth: 1,
+  borderRadius: 25,
+  paddingVertical: 12,
+  paddingHorizontal: 40,
+  marginVertical: 5,
+  width: '100%',
+  alignItems: 'center',
+},
+
+buttonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#eaf4f8',
   },
 });

@@ -60,6 +60,40 @@ def dt_getallbarber(request):
     return resp
 # dt_getdata
 
+#dt_geteventbyid
+def dt_getbarberbyid(request):
+    jsons = json.loads(request.body)
+    action = jsons.get('action')
+
+    try:
+        barbershopid = jsons['barbershopid']
+    except KeyError:
+        return sendResponse(action, 400, "id талбар дутуу байна", [])
+
+    try:
+        myConn = connectDB()
+        cursor = myConn.cursor()
+
+        query = f"""SELECT barbershopid, description, image, descriptionimage, location, rate, "time"
+	                FROM t_barbershop
+                    WHERE barbershopid = %s;"""
+        cursor.execute(query, (barbershopid,))
+        row = cursor.fetchone()
+
+        if row:
+            columns = [desc[0] for desc in cursor.description]
+            barber_data = dict(zip(columns, row))
+            return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
+        else:
+            return sendResponse(action, 404, "Салон олдсонгүй", [])
+
+    except Exception as e:
+        return sendResponse(action, 500, str(e), [])
+
+    finally:
+        disconnectDB(myConn)
+#dt_geteventbyid
+
 def dt_uploadimage(request):
     action = request.POST.get('action')
     # Step 2: Try to fetch the image file from request
@@ -149,6 +183,10 @@ def checkService(request):
             elif(action == 'getallbarber'): #
                 result = dt_getallbarber(request)
                 return (JsonResponse(result))
+            elif(action == 'getbarberbyid'): #
+                result = dt_getbarberbyid(request)
+                return (JsonResponse(result))
+            
             # elif(action == 'getuser'):
             #     result = dt_getuser(request)
             #     return (JsonResponse(result))

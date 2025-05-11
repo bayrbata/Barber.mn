@@ -1,92 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View, Text, StyleSheet, FlatList, Image,
+  TouchableOpacity, SafeAreaView, ScrollView
+} from 'react-native';
 import { Ionicons, Entypo, MaterialIcons } from '@expo/vector-icons';
-import { ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { fetchData, ResponseInterface, BASE_URL } from "../../utils/needful";
-
-const salons = [
-  {
-    id: '1',
-    name: 'berd barber shop',
-    distance: '8.8км',
-    views: 2019,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/60x60.png?text=berd',
-  },
-  {
-    id: '2',
-    name: 'Esa Vip Hair color salon',
-    distance: '8.8км',
-    views: 707,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/60x60.png?text=esa',
-  },
-  {
-    id: '3',
-    name: 'L&A Barber Shop',
-    distance: '9.3км',
-    views: 4326,
-    hours: '10:00–21:00',
-    image: 'https://via.placeholder.com/60x60.png?text=L%26A',
-  },
-  {
-    id: '4',
-    name: 'Бодь мутар',
-    distance: '10.3км',
-    views: 648,
-    hours: '09:00–21:00',
-    image: 'https://via.placeholder.com/60x60.png?text=Бодь',
-  },
-  {
-    id: '5',
-    name: "Jonny's barbershop",
-    distance: '10.3км',
-    views: 0,
-    hours: 'Амарна',
-    image: 'https://via.placeholder.com/60x60.png?text=Jonny',
-  },
-];
+import { fetchData, BASE_URL } from "../../utils/needful";
 
 export default function Barber() {
   const router = useRouter();
-  
   const [activeFilter, setActiveFilter] = useState('nearby');
-  
-
-  const [response, setResponse] = useState<ResponseInterface | null>(null);
+  const [originalData, setOriginalData] = useState<any[]>([]);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log("123456782345678");
     fetchList();
   }, []);
 
   const fetchList = async () => {
-    
     try {
       const data = await fetchData({
         url: BASE_URL + "/apibarber/",
-        // url: "http://issw.mandakh.org/apihabit/",
         method: "POST",
         body: { action: "getallbarber" },
       });
-      setResponse(data["data"]);
-      
-      
+      const barberList = data["data"];
+      setOriginalData(barberList);
+      setFilteredData(barberList);
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Алдаа гарлаа.");
     } finally {
       setLoading(false);
     }
   };
 
-
-
-  const handleFilterPress = (filter) => {
+  const handleFilterPress = (filter: string) => {
     setActiveFilter(filter);
-    // энд шүүлтүүрийн логик нэмэх боломжтой
+    let data = [...originalData];
+
+    switch (filter) {
+      case 'rating':
+        data = data.filter(item => item.rate > 0);
+        data.sort((a, b) => b.rate - a.rate);
+        break;
+      case 'new':
+        data = data.filter(item => item.type?.toLowerCase() === 'new');
+        break;
+      case 'tattoo':
+        data = data.filter(item => item.type?.toLowerCase() === 'tattoo');
+        break;
+      case 'massage':
+        data = data.filter(item => item.type?.toLowerCase() === 'massage');
+        break;
+      default:
+        data = originalData;
+    }
+
+    setFilteredData(data);
   };
 
   const renderSalon = ({ item }) => (
@@ -94,83 +66,63 @@ export default function Barber() {
       <Image source={{ uri: BASE_URL + item.image }} style={styles.logo} />
       <View style={{ flex: 1, paddingHorizontal: 10 }}>
         <Text style={styles.name}>{item.description}</Text>
-      <View style={styles.row}>
+        <View style={styles.row}>
           <Entypo name="location-pin" size={14} color="#004080" />
           <Text style={styles.infoText}>{item.location}</Text>
-      </View>
-      <View style={styles.row}>
+        </View>
+        <View style={styles.row}>
           <Entypo name="eye" size={14} color="#004080" />
-          <Text style={styles.infoText}>{item.location}</Text>
-      </View>
-      <View style={styles.row}>
+          <Text style={styles.infoText}>{item.rate}</Text>
+        </View>
+        <View style={styles.row}>
           <Ionicons name="time-outline" size={14} color="#004080" />
           <Text style={styles.infoText}>{item.time}</Text>
+        </View>
       </View>
-      </View >
-      <TouchableOpacity onPress={() => router.push(`/detail/${item.id}`)}>
-      <MaterialIcons name="arrow-forward-ios" size={16} color="#004080" />
-    </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push(`/detail/${item.barbershopid}`)}>
+        <MaterialIcons name="arrow-forward-ios" size={16} color="#004080" />
+      </TouchableOpacity>
     </View>
+  );
+
+  const renderFilterButtons = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ alignItems: "center", paddingVertical: 10 }}
+    >
+      <View style={styles.filterContainer}>
+        {[
+          { key: 'nearby', label: '📍 Надад ойр' },
+          { key: 'rating', label: '✨ Үнэлгээ их' },
+          { key: 'tattoo', label: '✏️ Шивээс' },
+          { key: 'new', label: '🆕 Шинэ' },
+          { key: 'massage', label: '💆 Бариа засал' },
+        ].map(({ key, label }) => (
+          <TouchableOpacity
+            key={key}
+            style={[styles.filterBtn, activeFilter === key && styles.activeBtn]}
+            onPress={() => handleFilterPress(key)}
+          >
+            <Text style={[styles.filterText, activeFilter === key && styles.activeText]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f1f4f6' }}>
-    
-      <ScrollView horizontal={true}
-      showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          alignItems: "center",
-          // justifyContent: "space-around",
-          flexDirection: "row",
-
-          //height: 150,
-          //borderWidth: 1,
-          
-        }}
-      >
-      <View style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterBtn, activeFilter === 'nearby' && styles.activeBtn]}
-          onPress={() => handleFilterPress('nearby')}
-        >
-          
-          <Text style={[styles.filterText, activeFilter === 'nearby' && styles.activeText]}>📍 Надад ойр</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterBtn, activeFilter === 'rating' && styles.activeBtn]}
-          onPress={() => handleFilterPress('rating')}
-        >
-          
-          <Text style={[styles.filterText, activeFilter === 'rating' && styles.activeText]}>✨ Үнэлгээ их</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterBtn, activeFilter === 'tattoo' && styles.activeBtn]}
-          onPress={() => handleFilterPress('tattoo')}
-        >
-          
-          <Text style={[styles.filterText, activeFilter === 'tattoo' && styles.activeText]}>✏️ Шивээс</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterBtn, activeFilter === 'new' && styles.activeBtn]}
-          onPress={() => handleFilterPress('new')}
-        >
-          <Text style={[styles.filterText, activeFilter === 'new' && styles.activeText]}>✏️ Шинэ</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterBtn, activeFilter === 'massage' && styles.activeBtn]}
-          onPress={() => handleFilterPress('massage')}
-        >
-          <Text style={[styles.filterText, activeFilter === 'massage' && styles.activeText]}>✏️ Бариа засал</Text>
-        </TouchableOpacity>
-      </View>
-      </ScrollView>
       <FlatList
-        data={response}
-        keyExtractor={(item) => item.id}
+        data={filteredData}
+        keyExtractor={(item) => item.barbershopid.toString()}
         renderItem={renderSalon}
         contentContainerStyle={styles.listContent}
+        ListHeaderComponent={renderFilterButtons()}
+        stickyHeaderIndices={[0]}
       />
-      
     </SafeAreaView>
   );
 }
@@ -178,10 +130,8 @@ export default function Barber() {
 const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    marginHorizontal: 10,
-    marginBottom: 10,
+    flexWrap: 'nowrap',
+    paddingHorizontal: 10,
   },
   filterBtn: {
     flexDirection: 'row',
@@ -194,8 +144,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 2,
     elevation: 1,
-    marginVertical: 4,
-    marginHorizontal: 10,
+    marginHorizontal: 6,
   },
   activeBtn: {
     backgroundColor: '#1f8a70',
@@ -203,8 +152,6 @@ const styles = StyleSheet.create({
   filterText: {
     fontSize: 14,
     color: '#333',
-    marginLeft: 6,
-    textAlign: 'center', // текстийг голлуулах
   },
   activeText: {
     color: '#fff',

@@ -1,19 +1,20 @@
 import { Tabs } from 'expo-router';
-import { Ionicons, MaterialIcons  } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: '#000',
-        tabBarLabelPosition: 'beside-icon', // Бичвэрийг icon-ийн хажууд гаргана
-        tabBarShowLabel: true, // Бичвэр харагдах ёстой
+        tabBarLabelPosition: 'beside-icon', // Icon-ийн хажууд бичвэр
+        tabBarShowLabel: true,
         tabBarIconStyle: {
-          marginRight: -4, // icon болон бичвэрийг ойртуулах
+          marginRight: -4,
         },
         tabBarLabelStyle: {
           fontSize: 14,
         },
+        headerTitleAlign: 'center', // Гарчгийг төвд байршуулах
       }}
     >
       <Tabs.Screen
@@ -30,7 +31,7 @@ export default function TabLayout() {
         options={{
           title: 'Захиалга',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="assignment" size={28} color="#333" />
+            <MaterialIcons name="assignment" size={28} color={color} />
           ),
         }}
       />
