@@ -21,6 +21,7 @@ export default function BarberDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+
   const fetchBarberById = async () => {
     try {
       setError('');
@@ -85,7 +86,7 @@ export default function BarberDetailScreen() {
           <Text style={styles.subtitle}>Бидний тухай</Text>
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.button} onPress={() => router.push(`/service/${barbershopid}`)}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push(`/service/${barberData.barbershopid}`)}>
               <Text style={styles.buttonText}>Үйлчилгээ</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button}>

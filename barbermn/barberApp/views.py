@@ -37,7 +37,7 @@ def dt_getallbarber(request):
     #     respData = []
     #     resp = sendResponse(action, 1001, "id key baihgui",respData)
     #     return resp
-    
+    # {"action":"getallbarber"}
     try:
         myConn = connectDB() # database connection
         cursor = myConn.cursor() # create cursor
@@ -60,7 +60,7 @@ def dt_getallbarber(request):
     return resp
 # dt_getdata
 
-#dt_geteventbyid
+#dt_getbarberbyid
 def dt_getbarberbyid(request):
     jsons = json.loads(request.body)
     action = jsons.get('action')
@@ -92,7 +92,158 @@ def dt_getbarberbyid(request):
 
     finally:
         disconnectDB(myConn)
-#dt_geteventbyid
+#dt_getbarberbyid
+
+#dt_getuilchilgeebyid
+def dt_getuilchilgeebyid(request):
+    jsons = json.loads(request.body)
+    action = jsons.get('action')
+
+    #{
+    #"action":"getuilchilgeebyid",
+    #"uilchilgeecategoryid":1
+    #}
+
+    try:
+        uilchilgeecategoryid = jsons['uilchilgeecategoryid']
+    except KeyError:
+        return sendResponse(action, 400, "id талбар дутуу байна", [])
+
+    try:
+        myConn = connectDB()
+        cursor = myConn.cursor()
+
+        query = """SELECT uilchilgeeid, uilchilgeename, uilchilgeedescription,une, hugatsaa
+                   FROM t_barberuilchilgee bu
+                   INNER JOIN t_barberuilchilgee_cat bc ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
+                   WHERE bc.uilchilgeecategoryid = %s;"""
+        cursor.execute(query, (uilchilgeecategoryid,))
+        rows = cursor.fetchall()
+
+        if rows:
+            columns = [desc[0] for desc in cursor.description]
+            barber_data = [dict(zip(columns, row)) for row in rows]
+            return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
+        else:
+            return sendResponse(action, 404, "Салон олдсонгүй", [])
+
+    except Exception as e:
+        return sendResponse(action, 500, str(e), [])
+
+    finally:
+        disconnectDB(myConn)
+#dt_getuilchilgeebyid
+
+#dt_getuilchilgeecat
+def dt_getuilchilgeecat(request):
+    jsons = json.loads(request.body)
+    action = jsons.get('action')
+
+    # {
+    # "action":"getuilchilgeecat",
+    # "barbershop_id":1
+    # }
+
+    try:
+        barbershop_id = jsons['barbershop_id']
+    except KeyError:
+        return sendResponse(action, 400, "id талбар дутуу байна", [])
+
+    try:
+        myConn = connectDB()
+        cursor = myConn.cursor()
+
+        query = """SELECT c.categoryname, c.uilchilgeecategoryid
+                    FROM t_barbershop b
+                    INNER JOIN t_barbercategory_shop h ON h.barbershopid = b.barbershopid
+                    INNER JOIN t_barberuilchilgee_cat c ON c.uilchilgeecategoryid = h.catid
+                    WHERE b.barbershopid = %s;"""
+        cursor.execute(query, (barbershop_id,))
+        rows = cursor.fetchall()
+
+        if rows:
+            columns = [desc[0] for desc in cursor.description]
+            barber_data = [dict(zip(columns, row)) for row in rows]
+            return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
+        else:
+            return sendResponse(action, 404, "Салон олдсонгүй", [])
+
+    except Exception as e:
+        return sendResponse(action, 500, str(e), [])
+
+    finally:
+        disconnectDB(myConn)
+#dt_getuilchilgeecat
+
+#dt_getbarberbyid
+# def dt_getcatuilbyid(request):
+#     jsons = json.loads(request.body)
+#     action = jsons.get('action')
+
+#     try:
+#         barbershopid = jsons['barbershopid']
+#     except KeyError:
+#         return sendResponse(action, 400, "id талбар дутуу байна", [])
+
+#     try:
+#         myConn = connectDB()
+#         cursor = myConn.cursor()
+
+#         query = f"""SELECT uilchilgeeid , uilchilgeename , uilchilgeedescription , image , une , hugatsaa,uridchilgaa_tolbor,tolbor,bu.uilchilgeecategoryid, categoryname FROM t_barberuilchilgee bu
+#                 INNER JOIN t_barberuilchilgee_cat bc ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
+#                 WHERE bu.uilchilgeeid = 1"""
+#         cursor.execute(query, (barbershopid,))
+#         row = cursor.fetchone()
+
+#         if row:
+#             columns = [desc[0] for desc in cursor.description]
+#             barber_data = dict(zip(columns, row))
+#             return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
+#         else:
+#             return sendResponse(action, 404, "Салон олдсонгүй", [])
+
+#     except Exception as e:
+#         return sendResponse(action, 500, str(e), [])
+
+#     finally:
+#         disconnectDB(myConn)
+#dt_getbarberbyid
+
+#dt_getalluilchilgee
+def dt_getalluilchilgee(request):
+    jsons = json.loads(request.body)
+    action = jsons['action']
+    # try:
+    #     id = jsons['id']
+    # except: 
+    #     action = action
+    #     respData = []
+    #     resp = sendResponse(action, 1001, "id key baihgui",respData)
+    #     return resp
+    
+    try:
+        myConn = connectDB() # database connection
+        cursor = myConn.cursor() # create cursor
+        query = f"""SELECT *
+                FROM t_barberuilchilgee t
+                INNER JOIN t_barberuilchilgee_cat c
+                ON c.uilchilgeecategoryid=t.uilchilgeecategoryid"""
+        cursor.execute(query)
+        columns = cursor.description
+        # print(columns)
+        respRow = [{columns[index][0]:column for index , column in enumerate(value) } for value in cursor.fetchall()]
+        # print(respRow)
+        resp = sendResponse(action, 200, "Success", respRow)
+    except Exception as e:
+        action = action
+        respData = []
+        resp = sendResponse(action, 1006, "getdata database error " + str(e), respData)
+    finally:
+        cursor.close()
+        disconnectDB(myConn)
+    
+    return resp
+#dt_getalluilchilgee
 
 def dt_uploadimage(request):
     action = request.POST.get('action')
@@ -185,6 +336,15 @@ def checkService(request):
                 return (JsonResponse(result))
             elif(action == 'getbarberbyid'): #
                 result = dt_getbarberbyid(request)
+                return (JsonResponse(result))
+            elif(action == 'getalluilchilgee'): #
+                result =dt_getalluilchilgee(request)
+                return (JsonResponse(result))
+            elif(action == 'getuilchilgeecat'): #
+                result =dt_getuilchilgeecat(request)
+                return (JsonResponse(result))
+            elif(action == 'getuilchilgeebyid'): #
+                result =dt_getuilchilgeebyid(request)
                 return (JsonResponse(result))
             
             # elif(action == 'getuser'):

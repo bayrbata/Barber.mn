@@ -1,96 +1,120 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
+import { useLocalSearchParams } from 'expo-router';
+export default function HaircutServices() {
+  const { id } = useLocalSearchParams(); //id avaad uur2 category haruulah
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
-const services = {
-  haircut: [
-    {
-      title: "Vip Svhee",
-      description: "tom hvn 50 hvvhed 35 shvv bros ???!!!",
-      price: "50,000₮",
-      duration: "40 мин",
-    },
-    {
-      title: "Заалны засалт",
-      description: "насны ангилалаар үнэ өөр өөр байна",
-      price: "35,000₮",
-      duration: "45 мин",
-    },
-    {
-      title: "Vip Доржоо",
-      description: "2024 Солонгос Монголын хамтарсан...",
-      price: "40,000₮",
-      duration: "40 мин",
-    },
-    {
-      title: "Vip Эрхмээ",
-      description: "2024 оны Солонгос Монголын хам...",
-      price: "40,000₮",
-      duration: "40 мин",
-    },
-    {
-      title: "Vip Bek",
-      description: "2k24 оны шилдэг барбер",
-      price: "40,000₮",
-      duration: "40 мин",
-    },
-    {
-      title: "Vip Өгөөдэй",
-      description: "2024 Солонгос Монголын хамтарсан...",
-      price: "40,000₮",
-      duration: "40 мин",
-    },
-  ],
-  coloring: [
-    {
-      title: "Эмэгтэй үс тайралт будаг",
-      description: "Үсийг гэмтээхгүйгээр өнгө гаргалт...",
-      price: "45,000₮",
-      duration: "45 мин",
-    },
-  ],
-};
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-export default function HairServices() {
-  const [activeTab, setActiveTab] = useState("haircut");
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/apibarber/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "getuilchilgeecat",barbershop_id :id }),
+      });
+
+      const json = await res.json();
+      if (json.resultCode === 200) {
+        setCategories(json.data);
+        setSelectedCategory(json.data[0].uilchilgeecategoryid); // default эхний категори
+      }
+    } catch (e) {
+      console.error("Category fetch error:", e);
+    }
+  };
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-xl font-semibold mb-4 text-center">Үйлчилгээ</h1>
-      <div className="flex justify-center mb-4 space-x-4">
-        <button
-          className={`px-4 py-2 rounded-full ${
-            activeTab === "haircut" ? "bg-green-600 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setActiveTab("haircut")}
-        >
-          Үс засалт
-        </button>
-        <button
-          className={`px-4 py-2 rounded-full ${
-            activeTab === "coloring" ? "bg-green-600 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => setActiveTab("coloring")}
-        >
-          Үс будалт
-        </button>
-      </div>
+    <View style={styles.container}>
+      <Text style={styles.header}>Үйлчилгээ</Text>
 
-      <div className="space-y-4">
-        {services[activeTab].map((item, index) => (
-          <div
-            key={index}
-            className="bg-white shadow rounded-xl p-4 flex justify-between items-center"
-          >
-            <div>
-              <h2 className="font-semibold">{item.title}</h2>
-              <p className="text-sm text-gray-500 truncate">{item.description}</p>
-            </div>
-            <div className="text-right">
-              <p className="font-semibold">{item.price}</p>
-              <p className="text-sm text-gray-400">{item.duration}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      {/* Категори таб хэсэг */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryScroll}
+      >
+        <View style={{ flexDirection: "row" }}>
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat.uilchilgeecategoryid;
+            return (
+              <TouchableOpacity
+                key={cat.uilchilgeecategoryid}  
+                onPress={() => setSelectedCategory(cat.uilchilgeecategoryid)}
+                style={[
+                  styles.categoryButton,
+                  isSelected ? styles.selectedCategory : styles.unselectedCategory,
+                ]}
+              >
+                <Text
+                  style={
+                    isSelected ? styles.selectedText : styles.unselectedText
+                  }
+                >
+                  {cat.categoryname.trim()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+  },
+  categoryScroll: {
+    paddingHorizontal: 4,
+    paddingVertical: 6,
+  },
+  categoryButton: {
+    height: 36, 
+    paddingHorizontal: 16,
+    borderRadius: 18,
+    borderWidth: 1,
+    marginRight: 8,
+    alignItems: "center",       
+    justifyContent: "center",   
+  },
+  selectedCategory: {
+    backgroundColor: "#047857",
+    borderColor: "#047857",
+  },
+  unselectedCategory: {
+    backgroundColor: "#F3F4F6",
+    borderColor: "#E5E7EB",
+  },
+  selectedText: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 13,
+    lineHeight: 16, 
+  },
+  unselectedText: {
+    color: "#374151",
+    fontSize: 13,
+    lineHeight: 16,
+  },
+});
+
