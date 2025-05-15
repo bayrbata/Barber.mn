@@ -7,9 +7,11 @@ import {
   StyleSheet,
 } from "react-native";
 import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function HaircutServices() {
-  const { id } = useLocalSearchParams(); // барбершоп id
+  const { id } = useLocalSearchParams(); 
+   const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [services, setServices] = useState([]);
@@ -67,55 +69,86 @@ export default function HaircutServices() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Үйлчилгээ</Text>
-
-      {/* Категори табууд */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoryScroll}
-      >
-        <View style={{ flexDirection: "row" }}>
-          {categories.map((cat) => {
-            const isSelected = selectedCategory === cat.uilchilgeecategoryid;
-            return (
-              <TouchableOpacity
-                key={cat.uilchilgeecategoryid}
-                onPress={() => setSelectedCategory(cat.uilchilgeecategoryid)}
-                style={[
-                  styles.categoryButton,
-                  isSelected ? styles.selectedCategory : styles.unselectedCategory,
-                ]}
+  <ScrollView style={styles.container}>
+    {/* Категори табууд */}
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.categoryScroll}
+    >
+      <View style={{ flexDirection: "row" }}>
+        {categories.map((cat) => {
+          const isSelected = selectedCategory === cat.uilchilgeecategoryid;
+          return (
+            <TouchableOpacity
+              key={cat.uilchilgeecategoryid}
+              onPress={() => setSelectedCategory(cat.uilchilgeecategoryid)}
+              style={[
+                styles.categoryButton,
+                isSelected ? styles.selectedCategory : styles.unselectedCategory,
+              ]}
+            >
+              <Text
+                style={
+                  isSelected ? styles.selectedText : styles.unselectedText
+                }
               >
-                <Text
-                  style={
-                    isSelected ? styles.selectedText : styles.unselectedText
-                  }
-                >
-                  {cat.categoryname.trim()}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
+                {cat.categoryname.trim()}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </ScrollView>
 
-      {/* Үйлчилгээний жагсаалт */}
-      <ScrollView style={{ marginTop: 16 }}>
-        {services.map((service) => (
-          <View key={service.uilchilgeeid} style={styles.serviceCard}>
-            <Text style={styles.serviceTitle}>{service.uilchilgeename}</Text>
-            <Text style={styles.serviceDescription}>
-              {service.uilchilgeedescription}
+    {/* Үйлчилгээний жагсаалт */}
+    <View style={{ marginTop: 16 }}>
+      {services.map((service) => (
+        <TouchableOpacity
+          key={service.uilchilgeeid}
+          onPress={() => router.push(`/serdetail/${service.uilchilgeeid}`)}
+          style={{
+            backgroundColor: '#ffffff',
+            padding: 16,
+            borderRadius: 16,
+            marginBottom: 16,
+            shadowColor: '#000',
+            shadowOpacity: 0.1,
+            shadowOffset: { width: 0, height: 4 },
+            shadowRadius: 10,
+            elevation: 4,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={{ fontSize: 16, fontWeight: '600', flex: 1 }}
+            >
+              {service.uilchilgeename}
             </Text>
-            <Text style={styles.servicePrice}>Үнэ: {service.une}₮</Text>
-            <Text style={styles.serviceDuration}>Хугацаа: {service.hugatsaa} мин</Text>
+            <Text style={{ fontSize: 16, fontWeight: '600' }}>
+              {service.une.toLocaleString()}₮
+            </Text>
           </View>
-        ))}
-      </ScrollView>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={{ color: '#777', marginTop: 4 }}
+          >
+            {service.uilchilgeedescription}
+          </Text>
+          <Text style={{ color: '#999', marginTop: 8, fontSize: 13 }}>
+            {service.hugatsaa} 
+          </Text>
+          </View>
+        </TouchableOpacity>
+      ))}
     </View>
-  );
+
+  </ScrollView>
+);
 }
 
 const styles = StyleSheet.create({

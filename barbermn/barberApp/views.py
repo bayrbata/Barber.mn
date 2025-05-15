@@ -176,37 +176,37 @@ def dt_getuilchilgeecat(request):
 #dt_getuilchilgeecat
 
 #dt_getbarberbyid
-# def dt_getcatuilbyid(request):
-#     jsons = json.loads(request.body)
-#     action = jsons.get('action')
+def dt_getcatuilbyid(request):
+    jsons = json.loads(request.body)
+    action = jsons.get('action')
 
-#     try:
-#         barbershopid = jsons['barbershopid']
-#     except KeyError:
-#         return sendResponse(action, 400, "id талбар дутуу байна", [])
+    try:
+        barbershopid = jsons['barbershopid']
+    except KeyError:
+        return sendResponse(action, 400, "id талбар дутуу байна", [])
 
-#     try:
-#         myConn = connectDB()
-#         cursor = myConn.cursor()
+    try:
+        myConn = connectDB()
+        cursor = myConn.cursor()
 
-#         query = f"""SELECT uilchilgeeid , uilchilgeename , uilchilgeedescription , image , une , hugatsaa,uridchilgaa_tolbor,tolbor,bu.uilchilgeecategoryid, categoryname FROM t_barberuilchilgee bu
-#                 INNER JOIN t_barberuilchilgee_cat bc ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
-#                 WHERE bu.uilchilgeeid = 1"""
-#         cursor.execute(query, (barbershopid,))
-#         row = cursor.fetchone()
+        query = f"""SELECT uilchilgeeid , uilchilgeename , uilchilgeedescription , image , une , hugatsaa,uridchilgaa_tolbor,tolbor,bu.uilchilgeecategoryid, categoryname FROM t_barberuilchilgee bu
+                INNER JOIN t_barberuilchilgee_cat bc ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
+                WHERE bu.uilchilgeeid = %s"""
+        cursor.execute(query, (barbershopid,))
+        row = cursor.fetchone()
 
-#         if row:
-#             columns = [desc[0] for desc in cursor.description]
-#             barber_data = dict(zip(columns, row))
-#             return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
-#         else:
-#             return sendResponse(action, 404, "Салон олдсонгүй", [])
+        if row:
+            columns = [desc[0] for desc in cursor.description]
+            barber_data = dict(zip(columns, row))
+            return sendResponse(action, 200, "Салон мэдээлэл", barber_data)
+        else:
+            return sendResponse(action, 404, "Салон олдсонгүй", [])
 
-#     except Exception as e:
-#         return sendResponse(action, 500, str(e), [])
+    except Exception as e:
+        return sendResponse(action, 500, str(e), [])
 
-#     finally:
-#         disconnectDB(myConn)
+    finally:
+        disconnectDB(myConn)
 #dt_getbarberbyid
 
 #dt_getalluilchilgee
@@ -346,6 +346,10 @@ def checkService(request):
             elif(action == 'getuilchilgeebyid'): #
                 result =dt_getuilchilgeebyid(request)
                 return (JsonResponse(result))
+            elif(action == 'getcatuilbyid'): #
+                result =dt_getcatuilbyid(request)
+                return (JsonResponse(result))
+            
             
             # elif(action == 'getuser'):
             #     result = dt_getuser(request)
