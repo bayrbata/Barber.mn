@@ -121,7 +121,6 @@ export default function Barber() {
         renderItem={renderSalon}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={renderFilterButtons()}
-        stickyHeaderIndices={[0]}
       />
     </SafeAreaView>
   );
