@@ -245,6 +245,47 @@ def dt_getalluilchilgee(request):
     return resp
 #dt_getalluilchilgee
 
+#dt_getalluilchilgee
+def dt_getallunelgee(request):
+    jsons = json.loads(request.body)
+    action = jsons['action']
+    # try:
+    #     id = jsons['id']
+    # except: 
+    #     action = action
+    #     respData = []
+    #     resp = sendResponse(action, 1001, "id key baihgui",respData)
+    #     return resp
+    
+    try:
+        myConn = connectDB() # database connection
+        cursor = myConn.cursor() # create cursor
+        query = f"""SELECT 
+                    ba.description,
+                    COUNT(b.userid) AS wishlist_count
+                    FROM 
+                    t_barberwishlist b
+                    INNER JOIN 
+                    t_barbershop ba ON b.barbershopid = ba.barbershopid
+                    GROUP BY 
+                    ba.description;"""
+        cursor.execute(query)
+        columns = cursor.description
+        # print(columns)
+        respRow = [{columns[index][0]:column for index , column in enumerate(value) } for value in cursor.fetchall()]
+        # print(respRow)
+        resp = sendResponse(action, 200, "Success", respRow)
+    except Exception as e:
+        action = action
+        respData = []
+        resp = sendResponse(action, 1006, "getdata database error " + str(e), respData)
+    finally:
+        cursor.close()
+        disconnectDB(myConn)
+    
+    return resp
+#dt_getallunelgee
+
 def dt_uploadimage(request):
     action = request.POST.get('action')
     # Step 2: Try to fetch the image file from request
@@ -349,7 +390,9 @@ def checkService(request):
             elif(action == 'getcatuilbyid'): #
                 result =dt_getcatuilbyid(request)
                 return (JsonResponse(result))
-            
+            elif(action == 'getallunelgee'): #
+                result =dt_getallunelgee(request)
+                return (JsonResponse(result))
             
             # elif(action == 'getuser'):
             #     result = dt_getuser(request)
