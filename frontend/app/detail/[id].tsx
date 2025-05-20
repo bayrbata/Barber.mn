@@ -76,20 +76,20 @@ export default function BarberDetailScreen() {
       >
         {/* Back Button */}
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={30} color="#fff" />
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
 
         {/* Title and Buttons */}
         <View style={styles.overlay}>
           <Text style={styles.title}>{barberData?.description}</Text>
           <View style={styles.underline} />
-          <Text style={styles.subtitle}>Бидний тухай</Text>
+          <Text style={styles.subtitle}>{barberData?.descriptionimage}</Text>
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.button} onPress={() => router.push(`/service/${barberData.barbershopid}`)}>
               <Text style={styles.buttonText}>Үйлчилгээ</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push(`/about/${id}`)}>
               <Text style={styles.buttonText}>Бидний тухай</Text>
             </TouchableOpacity>
           </View>
@@ -111,8 +111,8 @@ const styles = StyleSheet.create({
   },
 backButton: {
   position: 'absolute',
-  top: 20,
-  left: 20,
+  top: 10,
+  left: 10,
   backgroundColor: 'rgba(0,0,0,0.5)',
   padding: 10,
   borderRadius: 25,

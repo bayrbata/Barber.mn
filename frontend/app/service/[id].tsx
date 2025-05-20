@@ -10,12 +10,12 @@ import { useLocalSearchParams } from 'expo-router';
 import { useRouter } from 'expo-router';
 
 export default function HaircutServices() {
-  const { id } = useLocalSearchParams(); 
-   const router = useRouter();
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [services, setServices] = useState([]);
-
+  console.log(services)
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -54,6 +54,7 @@ export default function HaircutServices() {
         body: JSON.stringify({
           action: "getuilchilgeebyid",
           uilchilgeecategoryid: categoryId,
+          barbershopid:id,
         }),
       });
 
@@ -69,86 +70,136 @@ export default function HaircutServices() {
   };
 
   return (
-  <ScrollView style={styles.container}>
-    {/* Категори табууд */}
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.categoryScroll}
-    >
-      <View style={{ flexDirection: "row" }}>
-        {categories.map((cat) => {
-          const isSelected = selectedCategory === cat.uilchilgeecategoryid;
-          return (
-            <TouchableOpacity
-              key={cat.uilchilgeecategoryid}
-              onPress={() => setSelectedCategory(cat.uilchilgeecategoryid)}
-              style={[
-                styles.categoryButton,
-                isSelected ? styles.selectedCategory : styles.unselectedCategory,
-              ]}
-            >
-              <Text
-                style={
-                  isSelected ? styles.selectedText : styles.unselectedText
-                }
+    <ScrollView style={styles.container}>
+      {/* Категори табууд */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryScroll}
+      >
+        <View style={{ flexDirection: "row" }}>
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat.uilchilgeecategoryid;
+            return (
+              <TouchableOpacity
+                key={cat.uilchilgeecategoryid}
+                onPress={() => setSelectedCategory(cat.uilchilgeecategoryid)}
+                style={[
+                  styles.categoryButton,
+                  isSelected ? styles.selectedCategory : styles.unselectedCategory,
+                ]}
               >
-                {cat.categoryname.trim()}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    </ScrollView>
+                <Text
+                  style={
+                    isSelected ? styles.selectedText : styles.unselectedText
+                  }
+                >
+                  {cat.categoryname.trim()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
 
-    {/* Үйлчилгээний жагсаалт */}
-    <View style={{ marginTop: 16 }}>
-      {services.map((service) => (
-        <TouchableOpacity
-          key={service.uilchilgeeid}
-          onPress={() => router.push(`/serdetail/${service.uilchilgeeid}`)}
-          style={{
-            backgroundColor: '#ffffff',
-            padding: 16,
-            borderRadius: 16,
-            marginBottom: 16,
-            shadowColor: '#000',
-            shadowOpacity: 0.1,
-            shadowOffset: { width: 0, height: 4 },
-            shadowRadius: 10,
-            elevation: 4,
-          }}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text
-              numberOfLines={1}
-              ellipsizeMode="tail"
-              style={{ fontSize: 16, fontWeight: '600', flex: 1 }}
+      {/* Үйлчилгээний жагсаалт */}
+      {/* <View style={{ marginTop: 16 }}>
+        {services
+          .filter((service) => service.uilchilgeeid === id) // зөвхөн тухайн хэрэглэгчийн үйлчилгээг шүүнэ
+          .map((service) => (
+            <TouchableOpacity
+              key={service.uilchilgeeid}
+              onPress={() => router.push(`/serdetail/${service.uilchilgeeid}`)}
+              style={{
+                backgroundColor: '#ffffff',
+                padding: 16,
+                borderRadius: 16,
+                marginBottom: 16,
+                shadowColor: '#000',
+                shadowOpacity: 0.1,
+                shadowOffset: { width: 0, height: 4 },
+                shadowRadius: 10,
+                elevation: 4,
+              }}
             >
-              {service.uilchilgeename}
-            </Text>
-            <Text style={{ fontSize: 16, fontWeight: '600' }}>
-              {service.une.toLocaleString()}₮
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ color: '#777', marginTop: 4 }}
-          >
-            {service.uilchilgeedescription}
-          </Text>
-          <Text style={{ color: '#999', marginTop: 8, fontSize: 13 }}>
-            {service.hugatsaa} 
-          </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{ fontSize: 16, fontWeight: '600', flex: 1 }}
+                >
+                  {service.uilchilgeename}
+                </Text>
+                <Text style={{ fontSize: 16, fontWeight: '600' }}>
+                  {service.une.toLocaleString()}₮
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{ color: '#777', marginTop: 4, flex: 1 }}
+                >
+                  {service.uilchilgeedescription}
+                </Text>
+                <Text style={{ color: '#999', marginTop: 8, fontSize: 13 }}>
+                  {service.hugatsaa}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+      </View> */}
 
-  </ScrollView>
-);
+
+
+      <View style={{ marginTop: 16 }}>
+        {services.map((service) => (
+          <TouchableOpacity
+            key={service.uilchilgeeid}
+            onPress={() => router.push(`/serdetail/${service.uilchilgeeid}`)}
+            style={{
+              backgroundColor: '#ffffff',
+              padding: 16,
+              borderRadius: 16,
+              marginBottom: 16,
+              shadowColor: '#000',
+              shadowOpacity: 0.1,
+              shadowOffset: { width: 0, height: 4 },
+              shadowRadius: 10,
+              elevation: 4,
+            }}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ fontSize: 16, fontWeight: '600', flex: 1 }}
+              >
+                {service.uilchilgeename}
+              </Text>
+              <Text style={{ fontSize: 16, fontWeight: '600' }}>
+                {service.une.toLocaleString()}₮
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ color: '#777', marginTop: 4 }}
+              >
+                {service.uilchilgeedescription}
+              </Text>
+              <Text style={{ color: '#999', marginTop: 8, fontSize: 13 }}>
+                {service.hugatsaa}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+
+    </ScrollView>
+  );
 }
 
 const styles = StyleSheet.create({

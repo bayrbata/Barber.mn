@@ -106,6 +106,7 @@ def dt_getuilchilgeebyid(request):
 
     try:
         uilchilgeecategoryid = jsons['uilchilgeecategoryid']
+        barbershopid = jsons['barbershopid']  # Салбар газар
     except KeyError:
         return sendResponse(action, 400, "id талбар дутуу байна", [])
 
@@ -113,11 +114,23 @@ def dt_getuilchilgeebyid(request):
         myConn = connectDB()
         cursor = myConn.cursor()
 
-        query = """SELECT uilchilgeeid, uilchilgeename, uilchilgeedescription,une, hugatsaa
-                   FROM t_barberuilchilgee bu
-                   INNER JOIN t_barberuilchilgee_cat bc ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
-                   WHERE bc.uilchilgeecategoryid = %s;"""
-        cursor.execute(query, (uilchilgeecategoryid,))
+        query = f""" SELECT 
+                bu.uilchilgeeid, 
+                bu.uilchilgeename, 
+                bu.uilchilgeedescription, 
+                bu.une, 
+                bu.hugatsaa
+            FROM 
+                t_barberuilchilgee bu
+            INNER JOIN 
+                t_barberuilchilgee_cat bc 
+                ON bu.uilchilgeecategoryid = bc.uilchilgeecategoryid
+            INNER JOIN 
+                t_barberwishlist su 
+                ON bu.uilchilgeeid = su.userid
+            WHERE 
+                bu.uilchilgeecategoryid = %s AND su.barbershopid = %s;"""
+        cursor.execute(query, (uilchilgeecategoryid,barbershopid))
         rows = cursor.fetchall()
 
         if rows:
