@@ -222,6 +222,67 @@ def dt_getcatuilbyid(request):
         disconnectDB(myConn)
 #dt_getbarberbyid
 
+#dt_gettsag
+def dt_gettsag(request):
+
+    jsons = json.loads(request.body)
+    action = jsons.get('action')
+
+    try:
+        barbershop_id = jsons['barbershop_id']
+    except KeyError:
+        return sendResponse(action, 400, "barbershopid талбар дутуу байна", [])
+
+    try:
+        myConn = connectDB()
+        cursor = myConn.cursor()
+
+        query = """
+            WITH weekdays AS (
+                SELECT unnest(ARRAY['Mon','Tue','Wed','Thu','Fri','Sat','Sun']) AS weekday
+            )
+            SELECT 
+                w.weekday,
+                CASE 
+                    WHEN wh.start_time IS NULL THEN 'Амарна'
+                    ELSE TO_CHAR(wh.start_time, 'HH24:MI') || ' - ' || TO_CHAR(wh.end_time, 'HH24:MI')
+                END AS working_hours
+            FROM 
+                weekdays w
+            LEFT JOIN 
+                t_barberworkinghours wh 
+                ON w.weekday = wh.weekday AND wh.barbershop_id = %s
+            ORDER BY 
+                CASE 
+                    WHEN w.weekday = 'Mon' THEN 1
+                    WHEN w.weekday = 'Tue' THEN 2
+                    WHEN w.weekday = 'Wed' THEN 3
+                    WHEN w.weekday = 'Thu' THEN 4
+                    WHEN w.weekday = 'Fri' THEN 5
+                    WHEN w.weekday = 'Sat' THEN 6
+                    WHEN w.weekday = 'Sun' THEN 7
+                END;
+        """
+        cursor.execute(query, (barbershop_id,))
+        rows = cursor.fetchall()
+
+        if rows:
+            columns = [desc[0] for desc in cursor.description]
+            data = [dict(zip(columns, row)) for row in rows]
+
+
+            return sendResponse(action, 200, "Салон мэдээлэл", data)
+        else:
+            return sendResponse(action, 404, "Цагийн хуваарь олдсонгүй", [])
+
+    except Exception as e:
+        return sendResponse(action, 500, str(e), [])
+
+    finally:
+        disconnectDB(myConn)
+
+#dt_gettsag
+
 #dt_getalluilchilgee
 def dt_getalluilchilgee(request):
     jsons = json.loads(request.body)
@@ -240,7 +301,8 @@ def dt_getalluilchilgee(request):
         query = f"""SELECT *
                 FROM t_barberuilchilgee t
                 INNER JOIN t_barberuilchilgee_cat c
-                ON c.uilchilgeecategoryid=t.uilchilgeecategoryid"""
+                ON c.uilchilgeecategoryid=t.uilchilgeecategoryid
+                """
         cursor.execute(query)
         columns = cursor.description
         # print(columns)
@@ -254,11 +316,11 @@ def dt_getalluilchilgee(request):
     finally:
         cursor.close()
         disconnectDB(myConn)
-    
+
     return resp
 #dt_getalluilchilgee
 
-#dt_getalluilchilgee
+#dt_getallunelgee
 def dt_getallunelgee(request):
     jsons = json.loads(request.body)
     action = jsons['action']
@@ -269,7 +331,7 @@ def dt_getallunelgee(request):
     #     respData = []
     #     resp = sendResponse(action, 1001, "id key baihgui",respData)
     #     return resp
-    
+
     try:
         myConn = connectDB() # database connection
         cursor = myConn.cursor() # create cursor
@@ -302,6 +364,7 @@ def dt_getallunelgee(request):
 def dt_uploadimage(request):
     action = request.POST.get('action')
     # Step 2: Try to fetch the image file from request
+
     try:
         image_file = request.FILES.get('image')
     except: 
@@ -309,7 +372,7 @@ def dt_uploadimage(request):
         respData = []
         resp = sendResponse(action, 1001, "id key baihgui", respData)
         return resp
-    
+
     try:
         myConn = connectDB() # database connection
         cursor = myConn.cursor() # create cursor
@@ -405,6 +468,9 @@ def checkService(request):
                 return (JsonResponse(result))
             elif(action == 'getallunelgee'): #
                 result =dt_getallunelgee(request)
+                return (JsonResponse(result))
+            elif(action == 'gettsag'): #
+                result =dt_gettsag(request)
                 return (JsonResponse(result))
             
             # elif(action == 'getuser'):

@@ -111,14 +111,14 @@ const styles = StyleSheet.create({
   },
 backButton: {
   position: 'absolute',
-  top: 10,
-  left: 10,
+  top: 12,
+  left: 12,
   backgroundColor: 'rgba(0,0,0,0.5)',
-  padding: 10,
-  borderRadius: 25,
+  padding: 8,
+  borderRadius: 24,
   zIndex: 10,
-  borderColor: '#fff',      // Цагаан хүрээ
-  borderWidth: 1,         // Хүрээний зузаан
+  borderColor: '#fff',  
+  borderWidth: 1,   
 },
 overlay: {
   flex: 1,

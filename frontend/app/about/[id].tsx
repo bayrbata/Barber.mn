@@ -19,11 +19,11 @@ export default function BarberDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [barberData, setBarberData] = useState<any>(null);
+  const [workingHours, setWorkingHours] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
- 
 
-
+  // Барбер дэлгэрэнгүй мэдээлэл авах
   const fetchBarberById = async () => {
     try {
       setError('');
@@ -40,6 +40,24 @@ export default function BarberDetailScreen() {
     } catch (err) {
       console.error('Алдаа:', err);
       setError('Сервертэй холбогдож чадсангүй.');
+    }
+  };
+
+  // Цагийн хуваарь авах
+  const fetchWorkingHours = async () => {
+    try {
+      const res = await axios.post(API_URL, {
+        action: 'gettsag',
+        barbershop_id: id,
+      });
+
+      if (res.data && Array.isArray(res.data.data)) {
+          setWorkingHours(res.data.data);
+        } else {
+          console.warn('Цагийн хуваарь олдсонгүй.');
+        }
+    } catch (err) {
+      console.error('Цагийн хуваарь авах үед алдаа:', err);
     } finally {
       setLoading(false);
     }
@@ -47,17 +65,8 @@ export default function BarberDetailScreen() {
 
   useEffect(() => {
     fetchBarberById();
+    fetchWorkingHours();
   }, [id]);
-
-  const workingHours = [
-    { day: 'Ням', time: '11:00 - 20:00' },
-    { day: 'Даваа', time: '11:00 - 20:00' },
-    { day: 'Мягмар', time: '10:00 - 20:00' },
-    { day: 'Лхагва', time: '10:00 - 20:00' },
-    { day: 'Пүрэв', time: '10:00 - 20:00' },
-    { day: 'Баасан', time: '10:30 - 20:00' },
-    { day: 'Бямба', time: '10:00 - 20:00' },
-  ];
 
   if (loading) {
     return (
@@ -74,6 +83,17 @@ export default function BarberDetailScreen() {
       </View>
     );
   }
+
+  // Англи гарагийн нэрийг монголоор хөрвүүлэх
+  const weekdayToMongolian: any = {
+    Mon: 'Даваа',
+    Tue: 'Мягмар',
+    Wed: 'Лхагва',
+    Thu: 'Пүрэв',
+    Fri: 'Баасан',
+    Sat: 'Бямба',
+    Sun: 'Ням',
+  };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -93,9 +113,7 @@ export default function BarberDetailScreen() {
 
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Бидний тухай</Text>
-        <Text style={styles.description}>
-          {barberData?.descriptionimage}
-        </Text>
+        <Text style={styles.description}>{barberData?.descriptionimage}</Text>
 
         <View style={styles.underline} />
 
@@ -108,10 +126,12 @@ export default function BarberDetailScreen() {
 
         <View style={styles.scheduleContainer}>
           <Text style={styles.scheduleTitle}>Цагийн хуваарь</Text>
-          {workingHours.map((item, index) => (
+          {workingHours.map((item: any, index: number) => (
             <View key={index} style={styles.scheduleRow}>
-              <Text style={styles.scheduleDay}>{item.day}</Text>
-              <Text style={styles.scheduleTime}>{item.time}</Text>
+              <Text style={styles.scheduleDay}>
+                {weekdayToMongolian[item.weekday] }
+              </Text>
+              <Text style={styles.scheduleTime}>{item.working_hours}</Text>
             </View>
           ))}
         </View>

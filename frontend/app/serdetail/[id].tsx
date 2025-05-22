@@ -1,11 +1,12 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { useEffect, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function ServiceDetail(){
+export default function ServiceDetail() {
   const { id } = useLocalSearchParams();
   const [service, setService] = useState(null);
+  const router = useRouter();
 
   const baseURL = 'http://127.0.0.1:8000/';
 
@@ -41,23 +42,34 @@ export default function ServiceDetail(){
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{ uri: `${baseURL}${service.image}` }}
-        style={styles.image}
-        resizeMode="cover"
-      />
+      {/* Image with back icon */}
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: `${baseURL}${service.image}` }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <TouchableOpacity style={styles.backIcon} onPress={() => router.back()} >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.titleRow}>
         <Text style={styles.titleText}>{service.uilchilgeename}</Text>
         <Text style={styles.titleText}>{service.une}₮</Text>
       </View>
+
       <View style={styles.underline} />
+
       <Text style={styles.description}>{service.uilchilgeedescription}</Text>
 
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>Үргэлжлэх хугацаа:</Text>
         <Text>{service.hugatsaa}</Text>
       </View>
+
       <View style={styles.underline} />
+
       <View style={styles.infoRow}>
         <Text style={styles.infoLabel}>Урьдчилгаа төлбөр:</Text>
         <Text>{Number(service.uridchilgaa_tolbor).toLocaleString()}₮</Text>
@@ -82,17 +94,12 @@ export default function ServiceDetail(){
           style={styles.button}
         >
           <Text style={styles.buttonText}>Цаг сонгох</Text>
-          <Ionicons
-            name="arrow-forward"
-            size={20}
-            color="white"
-            style={styles.buttonIcon}
-          />
+          <Ionicons name="arrow-forward" size={20} color="white" style={styles.buttonIcon} />
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   loadingText: {
@@ -103,15 +110,27 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
   },
+  imageContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
   image: {
     width: '100%',
     aspectRatio: 16 / 9,
     borderRadius: 12,
   },
+  backIcon: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 8,
+    borderRadius: 24,
+  },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 16,
+    marginTop: 8,
   },
   titleText: {
     fontSize: 20,
@@ -136,7 +155,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   paymentNoteContainer: {
-    marginTop: 24,
+    marginTop: 30,
     alignItems: 'center',
     position: 'relative',
   },
@@ -170,13 +189,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   button: {
-    backgroundColor: 'black',
+    backgroundColor: 'green', // бүдэг ногоон
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
+    alignSelf: 'stretch',
   },
   buttonText: {
     color: 'white',
@@ -187,5 +208,3 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 });
-
-
