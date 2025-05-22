@@ -44,6 +44,14 @@ export default function TabLayout() {
           ),
         }}
       />
+       <Tabs.Screen
+    name="service/[id]"
+    options={{
+      title: 'Үйлчилгээ',
+      href: null, // tab-аас устгах
+      tabBarStyle: { display: 'none' }, // tab-ыг нуух
+    }}
+  />
     </Tabs>
   );
 }
